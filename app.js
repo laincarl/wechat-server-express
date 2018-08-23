@@ -9,6 +9,8 @@ import config from "./config"; //全局配置
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import http from "http";
+import https from "https";
+import fs from "fs";
 // const swaggerUi = require("swagger-ui-express");
 // import swaggerJSDoc from "swagger-jsdoc";
 // const CamelCaseToUnderScoreCase=require("./middlewares/CamelCaseToUnderScoreCase");
@@ -56,7 +58,7 @@ app.use(bodyParser.json()); // 调用bodyParser模块以便程序正确解析bod
 
 // app.use(CamelCaseToUnderScoreCase());
 routes(app); // 路由引入
-app.use(function(err, req, res) {
+app.use(function (err, req, res) {
 	console.error(err.stack);
 	res.status(500).send("Something broke!");
 });
@@ -65,7 +67,13 @@ app.use(function(err, req, res) {
 // mongoose.connect(config.database); // 连接数据库
 
 // 创建一个Socket.IO实例，并把它传递给服务器
-// var server = http.createServer(app);
+var privatekey = fs.readFileSync("./static/server_no_passwd.key", "utf8");
+
+var certificate = fs.readFileSync("./static/server.crt", "utf8");
+
+
+var options = { key: privatekey, cert: certificate };
+var server = https.createServer(options, app);
 // const socket = io.listen(server);
 
 // // 添加一个连接监听器
@@ -82,6 +90,6 @@ app.use(function(err, req, res) {
 // 		console.log("Server has disconnected");
 // 	});
 // });
-app.listen(port, () => {
+server.listen(port, () => {
 	console.log("listening on port : " + port);
 });
